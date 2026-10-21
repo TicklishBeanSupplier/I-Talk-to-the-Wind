@@ -52,12 +52,12 @@ function StudioRail({ drafts, selectedId }: { drafts: Draft[]; selectedId?: stri
         <Btn variant="on-panel-soft" icon="plus" busy={busy === "add"} onClick={() => run("add", draftFromPicker)}>Add files</Btn>
       </div>
       <div className="rail-scroll" style={{ marginTop: 10 }}>
-        <RailGroup title="Drafts" tone="var(--go)" drafts={groups.open} selectedId={selectedId} describe={(d) => (d.status === "draft" ? mediaLine(d.media[0]) : statusLine(d))} />
-        <RailGroup title="Posting now" tone="var(--on-panel)" drafts={groups.sending} selectedId={selectedId} describe={(d) => `Uploading to ${platformShort(d)}…`} />
-        <RailGroup title="Scheduled" tone="var(--warn)" drafts={groups.queued} selectedId={selectedId} describe={(d) => (d.scheduledFor ? `${dayAndTime(d.scheduledFor)} · ${platformShort(d)}` : platformShort(d))} />
+        <RailGroup title="Drafts" drafts={groups.open} selectedId={selectedId} describe={(d) => (d.status === "draft" ? mediaLine(d.media[0]) : statusLine(d))} />
+        <RailGroup title="Posting now" drafts={groups.sending} selectedId={selectedId} describe={(d) => `Uploading to ${platformShort(d)}…`} />
+        <RailGroup title="Scheduled" drafts={groups.queued} selectedId={selectedId} describe={(d) => (d.scheduledFor ? `${dayAndTime(d.scheduledFor)} · ${platformShort(d)}` : platformShort(d))} />
         {groups.posted.length > 0 && (
           <>
-            <p className="rail-label" style={{ color: "var(--on-panel-muted)" }}>Posted this week · {groups.posted.length}</p>
+            <p className="rail-label">Posted this week · {groups.posted.length}</p>
             <div className="row rail-pad" style={{ gap: 8 }}>
               {groups.posted.slice(0, 10).map((d) => (
                 <button key={d.id} type="button" onClick={() => navigate({ screen: "studio", draftId: d.id })} style={{ border: 0, padding: 0, background: "none", borderRadius: 10 }} aria-label={`Open ${draftTitle(d)}`}>
@@ -72,11 +72,11 @@ function StudioRail({ drafts, selectedId }: { drafts: Draft[]; selectedId?: stri
   );
 }
 
-function RailGroup({ title, tone, drafts, selectedId, describe }: { title: string; tone: string; drafts: Draft[]; selectedId?: string; describe: (d: Draft) => string }) {
+function RailGroup({ title, drafts, selectedId, describe }: { title: string; drafts: Draft[]; selectedId?: string; describe: (d: Draft) => string }) {
   if (!drafts.length) return null;
   return (
     <>
-      <p className="rail-label" style={{ color: tone }}>{title} · {drafts.length}</p>
+      <p className="rail-label">{title} · {drafts.length}</p>
       {drafts.map((d) => (
         <button key={d.id} type="button" className="rail-item" aria-current={d.id === selectedId ? "true" : undefined} onClick={() => navigate({ screen: "studio", draftId: d.id })}>
           <MediaThumb media={d.media[0]} size={52} />

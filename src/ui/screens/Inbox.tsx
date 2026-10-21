@@ -165,7 +165,8 @@ function ItemView({ item, onNext }: { item: InboxItem; onNext: () => void }) {
       <div className="stage-split">
         <div className="main">
           <div className="row">
-            <PlatformChip platform={item.platform}>{PLATFORM_LABEL[item.platform]} {KIND_LABEL(item).toLowerCase()}</PlatformChip>
+            <PlatformChip platform={item.platform} />
+            <span className="chip lime">{KIND_LABEL(item)}</span>
             {item.kind === "dm" && item.replyWindowEndsAt && (
               windowOpen
                 ? <span className="chip go">Reply open {relativeTime(item.replyWindowEndsAt, now).replace("in ", "")} more</span>

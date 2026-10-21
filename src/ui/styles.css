@@ -184,12 +184,15 @@ img { display: block; }
 .chip.instagram { background: var(--ig); color: var(--ig-ink); }
 .chip.facebook { background: var(--fb); color: var(--fb-ink); }
 .chip.youtube { background: var(--yt); color: var(--yt-ink); }
-.eyebrow.instagram { color: #ffc2d6; }
-.eyebrow.facebook { color: var(--on-panel-muted); }
-.eyebrow.youtube { color: var(--warn); }
-[aria-current="true"] .eyebrow.instagram { color: var(--accent); }
-[aria-current="true"] .eyebrow.facebook { color: var(--panel); }
-[aria-current="true"] .eyebrow.youtube { color: var(--warn-ink); }
+/* Lime carries the small headings: list eyebrows, rail labels, label markers. */
+.rail-item .eyebrow { color: var(--go); }
+.rail-item[aria-current="true"] .eyebrow { color: var(--go-ink); }
+.rail-label { color: var(--go); }
+.chip.lime { background: var(--go); color: var(--go-ink); }
+.stage .label::before {
+  content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+  background: var(--go); margin-right: 8px; vertical-align: -1px;
+}
 
 .seg { display: inline-flex; background: var(--well); border-radius: 999px; padding: 3px; }
 .seg button { border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 7px 14px; font-size: 13px; min-height: 34px; }

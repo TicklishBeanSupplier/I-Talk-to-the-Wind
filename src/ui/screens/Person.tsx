@@ -77,7 +77,7 @@ function PersonRail({ profile: p, loading, onFollowed }: { profile: PersonProfil
       </div>
 
       <div className="col" style={{ gap: 10, background: "var(--panel-2)", borderRadius: 20, padding: 16 }}>
-        <p className="label" style={{ color: "var(--on-panel-muted)" }}>With you</p>
+        <p className="label" style={{ color: "var(--go)" }}>With you</p>
         <div className="grid3">
           {[["messages", history.messages], ["comments", history.comments], ["story replies", history.storyReplies]].map(([label, n]) => (
             <div key={label} className="col" style={{ gap: 0 }}>
