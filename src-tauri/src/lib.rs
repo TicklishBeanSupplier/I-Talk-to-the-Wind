@@ -64,6 +64,7 @@ pub fn run() {
         .manage(oauth::OAuthState::default())
         .invoke_handler(tauri::generate_handler![
             files::list_dir,
+            files::file_info,
             files::read_file,
             files::read_chunk,
             secrets::secret_get,

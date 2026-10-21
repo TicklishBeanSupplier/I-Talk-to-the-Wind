@@ -3,6 +3,8 @@ import type { Draft, PlatformId, RemotePost, WorkItem } from "./types";
 import { truncate } from "./util";
 
 const remoteKey = (platform: PlatformId, id: string) => `${platform}:${id}`;
+const SAME_POST_WINDOW_MS = 3 * 3_600_000;
+const normalizeTitle = (caption: string) => titleFromCaption(caption, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 
 /**
  * Build the Work list: posts published from this app are grouped across
@@ -43,15 +45,30 @@ export function groupWork(drafts: Draft[], remote: RemotePost[]): WorkItem[] {
     });
   }
 
-  for (const p of remote) {
-    const k = remoteKey(p.platform, p.remoteId);
-    if (used.has(k)) continue;
+  // Posts made elsewhere: the same piece shared to several platforms within a
+  // few hours under the same title is grouped as one.
+  const outside = remote.filter((p) => !used.has(remoteKey(p.platform, p.remoteId))).sort((a, b) => a.at.localeCompare(b.at));
+  const groups: RemotePost[][] = [];
+  for (const p of outside) {
+    const title = normalizeTitle(p.caption);
+    const t = new Date(p.at).getTime();
+    const group = title
+      ? groups.find((g) =>
+          !g.some((x) => x.platform === p.platform) &&
+          normalizeTitle(g[0].caption) === title &&
+          Math.abs(new Date(g[0].at).getTime() - t) <= SAME_POST_WINDOW_MS)
+      : undefined;
+    if (group) group.push(p);
+    else groups.push([p]);
+  }
+  for (const g of groups) {
+    const first = g[0];
     items.push({
-      key: k,
-      title: p.caption.trim() ? truncate(titleFromCaption(p.caption, "Untitled"), 60) : "Untitled",
-      at: p.at,
-      thumbUrl: p.thumbUrl,
-      posts: [p],
+      key: g.map((p) => remoteKey(p.platform, p.remoteId)).join("+"),
+      title: first.caption.trim() ? truncate(titleFromCaption(first.caption, "Untitled"), 60) : "Untitled",
+      at: first.at,
+      thumbUrl: g.find((p) => p.thumbUrl)?.thumbUrl,
+      posts: g,
     });
   }
 

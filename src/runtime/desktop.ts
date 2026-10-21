@@ -27,6 +27,7 @@ export async function createDesktopRuntime(): Promise<Runtime> {
 
     files: {
       listDir: (path) => invoke<DirEntry[]>("list_dir", { path }),
+      fileInfo: (path) => invoke<DirEntry>("file_info", { path }),
       readBytes: async (path) => bytes(await invoke<ArrayBuffer>("read_file", { path })),
       readChunk: async (path, offset, length) => bytes(await invoke<ArrayBuffer>("read_chunk", { path, offset, length })),
       displayUrl: (path) => convertFileSrc(path),

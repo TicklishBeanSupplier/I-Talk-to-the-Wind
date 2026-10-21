@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: mode === "preview" ? "dist-preview" : "dist",
     target: "es2022",
+    // The one-file preview embeds its font; the desktop build loads it from disk.
+    assetsInlineLimit: mode === "preview" ? 100_000_000 : 4096,
   },
   test: { environment: "node", include: ["src/**/*.test.ts"] },
 }));

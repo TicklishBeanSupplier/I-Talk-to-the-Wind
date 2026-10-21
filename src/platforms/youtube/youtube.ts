@@ -376,3 +376,13 @@ export function nextOffset(range: string | null): number {
 function toStats(v: RawVideo): PostStats {
   return { likes: num(v.statistics?.likeCount), comments: num(v.statistics?.commentCount), views: num(v.statistics?.viewCount) };
 }
+
+/** After logging in: which channel did we connect? */
+export async function fetchMyChannel(fetchFn: FetchFn, auth: GoogleAuth): Promise<YouTubeAccount> {
+  const res = await fetchFn(`${API}/channels?part=snippet&mine=true`, { headers: { Authorization: `Bearer ${await auth.accessToken()}` } });
+  const json = (await res.json().catch(() => ({}))) as { items?: RawChannel[]; error?: { message?: string } };
+  if (!res.ok || json.error) throw new PlatformError(json.error?.message ?? "Couldn't read your YouTube channel.", "youtube");
+  const ch = json.items?.[0];
+  if (!ch) throw new PlatformError("This Google account has no YouTube channel. Create one on youtube.com first.", "youtube");
+  return { channelId: ch.id, channelTitle: ch.snippet?.title ?? "Your channel", connectedAt: new Date().toISOString() };
+}

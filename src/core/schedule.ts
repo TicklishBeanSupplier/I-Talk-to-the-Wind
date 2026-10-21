@@ -1,4 +1,5 @@
 import type { Draft, PlatformId } from "./types";
+import { PLATFORMS } from "./types";
 
 /** "09:00" -> minutes after midnight. */
 function toMinutes(hhmm: string): number {
@@ -58,15 +59,14 @@ export function canUsePlatformScheduler(scheduleAt: Date, now = new Date()): boo
   return ahead >= NATIVE_MIN_MS && ahead <= NATIVE_MAX_MS;
 }
 
-/** Platforms on a draft that the app itself still has to publish now. */
+/**
+ * Platforms the app itself must publish now. Only platforms you confirmed
+ * with "Schedule" (marked waiting) qualify, so a draft with a time picked
+ * but never scheduled is never sent on its own.
+ */
 export function platformsDueNow(draft: Draft, now = new Date()): PlatformId[] {
-  if (!draft.scheduledFor) return [];
-  if (new Date(draft.scheduledFor).getTime() > now.getTime()) return [];
-  return (["instagram", "facebook", "youtube"] as PlatformId[]).filter((p) => {
-    if (!draft.targets[p].enabled) return false;
-    const r = draft.results[p];
-    return !r || r.state === "waiting";
-  });
+  if (!draft.scheduledFor || new Date(draft.scheduledFor).getTime() > now.getTime()) return [];
+  return PLATFORMS.filter((p) => draft.targets[p].enabled && draft.results[p]?.state === "waiting");
 }
 
 export function relativeTime(iso: string, now = new Date()): string {

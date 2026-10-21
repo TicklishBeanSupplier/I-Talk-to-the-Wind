@@ -31,23 +31,37 @@ pub async fn list_dir(path: String) -> Result<Vec<DirEntry>, String> {
             if !meta.is_file() {
                 continue;
             }
-            let modified_at = meta
-                .modified()
-                .ok()
-                .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
-                .map(|d| d.as_millis() as u64)
-                .unwrap_or(0);
             out.push(DirEntry {
                 path: entry.path().to_string_lossy().into_owned(),
                 name,
                 size_bytes: meta.len(),
-                modified_at,
+                modified_at: modified_ms(&meta),
             });
         }
         Ok(out)
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+/// Size and modified time of one file (for files added by hand).
+#[tauri::command]
+pub async fn file_info(path: String) -> Result<DirEntry, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let meta = fs::metadata(&path).map_err(|e| describe(&path, e))?;
+        let name = Path::new(&path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        Ok(DirEntry { size_bytes: meta.len(), modified_at: modified_ms(&meta), name, path })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+fn modified_ms(meta: &fs::Metadata) -> u64 {
+    meta.modified()
+        .ok()
+        .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
 }
 
 /// The whole file, sent to the web view as raw bytes (no JSON encoding).

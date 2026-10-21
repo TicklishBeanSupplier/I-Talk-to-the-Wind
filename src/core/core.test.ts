@@ -117,7 +117,8 @@ describe("schedule", () => {
   it("lists platforms the app must publish", () => {
     const d = newDraft([img()], DEFAULT_SETTINGS);
     d.scheduledFor = new Date(Date.now() - 1000).toISOString();
-    d.results = { facebook: result("scheduled") };
+    expect(platformsDueNow(d)).toEqual([]); // time picked but never scheduled
+    d.results = { facebook: result("scheduled"), instagram: result("waiting") };
     expect(platformsDueNow(d)).toEqual(["instagram"]);
   });
 });
@@ -217,5 +218,50 @@ describe("groupWork", () => {
     expect(w[0].posts.map((p) => p.platform)).toEqual(["instagram", "facebook"]);
     expect(w[0].posts[0].stats.likes).toBe(5);
     expect(w[1].title).toBe("Older one");
+  });
+
+  it("groups the same outside post across platforms, but not different ones", () => {
+    const at = "2026-01-10T10:00:00Z";
+    const later = "2026-01-10T11:30:00Z";
+    const far = "2026-01-12T10:00:00Z";
+    const mk = (platform: RemotePost["platform"], id: string, caption: string, when: string): RemotePost => ({ platform, remoteId: id, caption, at: when, kind: "image", stats: {} });
+    const w = groupWork([], [
+      mk("instagram", "a", "Bluebird Tuesday!\n#pow", at),
+      mk("facebook", "b", "bluebird tuesday", later),
+      mk("facebook", "c", "Bluebird Tuesday", far),
+      mk("instagram", "d", "Something else", at),
+    ]);
+    const grouped = w.find((x) => x.posts.length === 2)!;
+    expect(grouped.posts.map((p) => p.remoteId).sort()).toEqual(["a", "b"]);
+    expect(w).toHaveLength(3);
+  });
+});
+
+import { adoptExisting, emptyOutbox, scanOutbox } from "./outbox";
+
+describe("outbox watcher", () => {
+  const e = (name: string, size: number, mtime = 1) => ({ path: `/out/${name}`, name, sizeBytes: size, modifiedAt: mtime });
+
+  it("waits until a file stops growing", () => {
+    let mem = emptyOutbox();
+    let r = scanOutbox([e("a.mp4", 100)], mem);
+    expect(r.ready).toEqual([]);
+    mem = r.memory;
+    r = scanOutbox([e("a.mp4", 500)], mem); // still exporting
+    expect(r.ready).toEqual([]);
+    r = scanOutbox([e("a.mp4", 500)], r.memory);
+    expect(r.ready.map((x) => x.name)).toEqual(["a.mp4"]);
+    r = scanOutbox([e("a.mp4", 500)], r.memory); // not picked up twice
+    expect(r.ready).toEqual([]);
+  });
+
+  it("ignores junk and existing files, and notices re-exports", () => {
+    const mem = adoptExisting([e("old.jpg", 10)]);
+    let r = scanOutbox([e("old.jpg", 10), e(".DS_Store", 5), e("notes.txt", 5), e("x.mp4.part", 5)], mem);
+    expect(r.ready).toEqual([]);
+    expect(Object.keys(r.memory.pending)).toEqual([]);
+    r = scanOutbox([e("old.jpg", 12, 2)], r.memory); // overwritten by a new export
+    r = scanOutbox([e("old.jpg", 12, 2)], r.memory);
+    expect(r.ready.map((x) => x.name)).toEqual(["old.jpg"]);
   });
 });

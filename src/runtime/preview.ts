@@ -9,12 +9,14 @@ interface SampleFile extends DirEntry {
 
 const OUTBOX = "/Preview/Conduit Outbox";
 const minute = 60_000;
+const SAMPLE_EPOCH = Date.UTC(2026, 9, 1, 12);
 
 const samples: SampleFile[] = [
   { name: "bluebird_drop.jpg", sizeBytes: 4_200_000, info: { width: 1500, height: 1000 }, url: snowArt(11, 1500, 1000), age: 4 },
   { name: "first_chair_edit_v3.mp4", sizeBytes: 86_000_000, info: { width: 1080, height: 1920, durationSec: 42 }, url: snowArt(5, 540, 960), age: 9 },
   { name: "summit_rime.jpg", sizeBytes: 3_100_000, info: { width: 1080, height: 1350 }, url: snowArt(23, 1080, 1350), age: 30 },
-].map(({ age, ...f }) => ({ ...f, path: `${OUTBOX}/${f.name}`, modifiedAt: Date.now() - age * minute }));
+// Fixed times, like real files: the same file must look the same on every load.
+].map(({ age, ...f }) => ({ ...f, path: `${OUTBOX}/${f.name}`, modifiedAt: SAMPLE_EPOCH - age * minute }));
 
 const byPath = new Map(samples.map((s) => [s.path, s]));
 
@@ -37,6 +39,12 @@ export function createPreviewRuntime(): Runtime {
 
     files: {
       listDir: async (path) => (path === OUTBOX ? samples.map(({ url: _u, info: _i, ...e }) => e) : []),
+      fileInfo: async (path) => {
+        const f = byPath.get(path);
+        if (!f) throw new Error("That sample file doesn't exist.");
+        const { url: _u, info: _i, ...entry } = f;
+        return entry;
+      },
       readBytes: async (path) => new Uint8Array(byPath.get(path)?.sizeBytes ?? 0),
       readChunk: async (_path, _offset, length) => new Uint8Array(length),
       displayUrl: (path) => byPath.get(path)?.url ?? snowArt(path.length * 7),

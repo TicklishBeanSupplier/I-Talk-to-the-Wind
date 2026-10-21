@@ -20,6 +20,8 @@ export interface MediaInfo {
 export interface FileAccess {
   /** Files directly inside a folder (not recursive, no hidden files). */
   listDir(path: string): Promise<DirEntry[]>;
+  /** Size and modified time of one file. */
+  fileInfo(path: string): Promise<DirEntry>;
   readBytes(path: string): Promise<Uint8Array>;
   /** Part of a file, for uploading large videos without loading them whole. */
   readChunk(path: string, offset: number, length: number): Promise<Uint8Array>;
