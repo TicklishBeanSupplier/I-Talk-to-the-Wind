@@ -1,0 +1,23 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "What the Conduit window may do.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "opener:default",
+    "store:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://graph.facebook.com/*" },
+        { "url": "https://graph-video.facebook.com/*" },
+        { "url": "https://rupload.facebook.com/*" },
+        { "url": "https://www.googleapis.com/*" },
+        { "url": "https://oauth2.googleapis.com/*" },
+        { "url": "https://*.supabase.co/*" }
+      ]
+    }
+  ]
+}
