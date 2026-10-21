@@ -39,9 +39,14 @@ Then, in the project folder:
 
 ```bash
 npm install
+npm install-scripts approve esbuild   # newer npm blocks esbuild's setup until approved
+npm install
 npm run app          # run it
 npm run app:build    # build an installer (src-tauri/target/release/bundle/)
 ```
+
+If `npm run app` says it can't find `cargo`, Rust isn't installed or the
+terminal was opened before installing it: install Rust, then open a new terminal.
 
 Closing the window keeps Conduit in the tray (Windows) / menu bar (macOS) so
 scheduled posts go out on time. Use **Quit** from the tray icon to stop it.
