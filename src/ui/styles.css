@@ -259,3 +259,18 @@ img { display: block; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .spin { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Narrow screens (the browser preview on a phone): stack the rail above the stage. */
+@media (max-width: 900px) {
+  html, body, #root { height: auto; }
+  .app { flex-direction: column; height: auto; min-height: 100%; overflow: visible; }
+  .rail { flex: none; max-height: none; padding: 18px 0 18px max(16px, env(safe-area-inset-left, 0px)); }
+  .rail-scroll { max-height: 320px; }
+  .rail-pad, .nav, .rail-foot, .preview-banner { padding-right: max(16px, env(safe-area-inset-right, 0px)); margin-right: 0; }
+  .stage { border-radius: 28px 28px 0 0; overflow: visible; }
+  .stage-inner { padding: 24px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+  .stage-split > .side { position: static; max-width: none; }
+  .mega { font-size: 56px; }
+  .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .toasts { left: 16px; right: 16px; }
+}
