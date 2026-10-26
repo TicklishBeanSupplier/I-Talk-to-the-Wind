@@ -8,7 +8,14 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 export default defineConfig(({ mode }) => ({
   plugins: [react(), ...(mode === "preview" ? [viteSingleFile()] : [])],
   clearScreen: false,
-  server: { port: 1420, strictPort: true, host: "127.0.0.1" },
+  server: {
+    port: 1420,
+    strictPort: true,
+    host: "127.0.0.1",
+    // Rust writes thousands of build files under src-tauri while the app
+    // compiles; watching them crashes Vite on Windows (locked files).
+    watch: { ignored: ["**/src-tauri/**", "**/dist/**", "**/dist-preview/**"] },
+  },
   build: {
     outDir: mode === "preview" ? "dist-preview" : "dist",
     target: "es2022",
